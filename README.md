@@ -23,6 +23,9 @@ We created this script to automate the entire process, offering a simple yet pow
 #### Why It Matters
 Accurate tax reporting is non-negotiable, and missing a single confirmation can throw off calculations, leading to costly mistakes. This script, and the help at [https://www.skatteguru.se/help-center/etrade-documents](https://www.skatteguru.se/help-center/etrade-documents), empowers E\*TRADE users to save time, reduce stress, and file their taxes with confidence—knowing they have every necessary document in hand.
 
+### Prior Art & Credits
+We originally wrote a [JavaScript snippet](https://gist.github.com/isakb/f9652fd4d89e283aafd0c301d7ac3f07) that enabled downloading all PDFs as a .zip file, but after an update to the E\*TRADE website, this stopped working. [@tomasaschan](https://github.com/tomasaschan) shared an approach similar to this script, and we let Grok 3.0 write this python script based on his approach, with a few tweaks.
+
 ## Dependencies
 
 To use this script, you'll need the following installed on your system:
