@@ -124,10 +124,12 @@ relevant_confirmations = [conf for conf in confirmations if conf.get("planTypeCo
 # Process confirmations
 if not relevant_confirmations:
     print("No relevant confirmations found for 'Restricted Stock' or 'STOCK OPTIONS'.")
+    exit(1)
 else:
     print(f"Found {len(relevant_confirmations)} relevant confirmations.")
     os.makedirs("docs", exist_ok=True)
     success_count = 0
+    failed_count = 0
     for i, conf in enumerate(relevant_confirmations, 1):
         # Format date
         date_str = conf.get("confirmationDate", "")
@@ -138,11 +140,21 @@ else:
             formatted_date = "unknown_date"
             print(f"Warning: Invalid date '{date_str}' for confirmation {conf.get('confirmationId')}")
 
-        # Build filename and URL
+        # Build filename and URL based on plan type
         plan_type = conf["planTypeCode"].lower().replace(" ", "_")
-        confirmationId = conf["confirmationId"]
-        pdf_url = f"https://us.etrade.com/webapisp/stockplan/pdf/getReleaseConfirmation.pdf?eId={eId}&cId={confirmationId}"
-        filename = f"docs/{formatted_date}_{plan_type}_{confirmationId}.pdf"
+        base_url = "https://us.etrade.com/webapisp/stockplan/pdf/"
+        conf_id = conf['confirmationId']
+
+        if plan_type == "stock_options":
+            pdf_path = "getExerciseConfirmation.pdf"
+            id_param = f"tId={conf_id}"
+        else:
+            pdf_path = "getReleaseConfirmation.pdf"
+            id_param = f"cId={conf_id}"
+
+        pdf_url = f"{base_url}{pdf_path}?eId={eId}&{id_param}"
+
+        filename = f"docs/{formatted_date}_{plan_type}_{conf['confirmationId']}.pdf"
 
         # Download PDF
         print(f"Downloading PDF {i}/{len(relevant_confirmations)}: {filename}")
@@ -155,9 +167,20 @@ else:
                 success_count += 1
             else:
                 print(f"Failed to download {filename} (Status: {pdf_response.status_code})")
+                failed_count += 1
         except Exception as e:
             print(f"Error downloading {filename}: {e}")
+            failed_count += 1
 
-    print(f"Successfully downloaded {success_count} out of {len(relevant_confirmations)} PDFs.")
+    # Print summary
+    print("\nDownload Summary:")
+    print(f"Total confirmations found: {len(relevant_confirmations)}")
+    print(f"Successfully downloaded: {success_count}")
+    print(f"Failed downloads: {failed_count}")
 
-print("Download process completed.")
+    if failed_count > 0:
+        print("\nSome downloads failed. Exiting with error code 1.")
+        exit(1)
+    else:
+        print("\nAll downloads completed successfully.")
+        exit(0)
